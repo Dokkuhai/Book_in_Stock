@@ -1,4 +1,4 @@
-**Book_of_Stock**
+**Book_in_Stock**
 
 
 Design and code a program that manages the list of books in a local bookstore.  Information about a book includes: • a code, • a title • a quantity • a price for each book.  Design your program according to structured design principles.  Your program uses parallel arrays or array of structs and includes functions to validate the input and to sort the items by code.  You may assume that there are no more than 100 books to process, but write your code so that you can change this limit by editing a single statement. Preface each function header with a comprehensive description of the function purpose, the function parameters and the function return value. On running, your program displays the menu as below:
