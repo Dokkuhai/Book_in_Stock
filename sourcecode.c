@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#define MAX 100
 
 struct books{
   char code[10];
@@ -8,22 +10,31 @@ struct books{
   float price;
   float value;
 };
+//Delete \n when using fgets function;
+void delete_newline(char* str) {
+    size_t length = strlen(str);
+    if (length > 0 && str[length - 1] == '\n') {
+        str[length - 1] = '\0';
+    }
+}
 
-void addbook(struct books book[],int n){
-  int *k;
-  *k=1;
-  for(int i=1;i<=n;i++){
-    printf(" Book %d:",*k);
-    printf("\n Enter code: ");
-    scanf("%c",book[i].code);
+
+void addbook(struct books book[],int* k,int n){
+  for(int i=0;i<n;i++){
+    printf(" Book %d:\n",*k+1);
+    printf(" Enter code: ");
+    scanf("%s",book[i].code);
     printf(" Enter title: ");
+    getchar();
     fgets(book[*k].title,sizeof(book[*k].title),stdin);
+    delete_newline(book[i].title);
     printf(" Enter quantity: ");
     scanf("%d",&book[*k].quantity);
     printf(" Enter price: ");
     scanf("%f",&book[*k].price);
     book[*k].value = book[*k].quantity*book[*k].price;
-    *k++;
+    (*k)++;
+    printf("\n");
   }
 }
 
@@ -44,10 +55,14 @@ void displaymenu(){
   
 }
 
-void display_list_book(int arr[],int k){
+void display_list_book(struct books book[],int k){
+
+  printf("Code\tTitle\tQuantity\tPrice\tValue\n");
   for(int i=0;i<k;i++){
-    printf("");
+    printf("%s\t%s\t%d\t\t%.2f\t%.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
   }
+  printf("\n");
+  getchar();
 }
  
 void sortofbook(){
@@ -59,7 +74,7 @@ void sortofbook(){
 int main()
 {
   int choice;
-  int *k,n;
+  int k=0,n;
   struct books* book;
   
 
@@ -72,9 +87,11 @@ int main()
         printf("\nEnter the number of book: ");
         scanf("%d",&n);
         book = (struct books*)malloc(n* sizeof(struct books));
-        addbook(book,n);
+        addbook(book,&k,n);
         break;
-      case 2: 
+      case 2:
+        display_list_book(book,k);
+        break;
       case 3:
       case 4:
       case 5:
@@ -85,6 +102,7 @@ int main()
         displaymenu();
         break;
     }
-  }while(choice == 0);
+  }while(choice != 0);
+  free(book);
   return 0;
 }
