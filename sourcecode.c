@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 int MAX=100;
 
 struct books{
@@ -11,6 +12,26 @@ struct books{
   float value;
 };
 
+
+void clear_screen() {
+    #ifdef _WIN32
+        system("cls"); // For Windows
+    #else
+        system("clear"); // For Unix/Linux
+    #endif
+}
+
+// Edit the value of MAX if user input more 100 books 
+void edit_max(){
+  char check;
+  printf("You inputing over 100 books! If you want to continue, you need edit it!\n");
+  printf("Are you want to continue(y/n): ");
+  scanf("%s",&check);
+  if(check == 'Y' || check == 'y'){
+    printf("Max = ");
+    scanf("%d",&MAX);
+  }
+}
 
 //Delete \n when using fgets function;
 void delete_newline(char* str) {
@@ -24,6 +45,7 @@ void delete_newline(char* str) {
 
 
 void addbook(struct books book[],int *k,int n){
+  
   for(int i=0;i<n;i++){
     printf(" Book %d:\n",*k+1);
     printf(" Enter code: ");
@@ -60,7 +82,7 @@ void displaymenu(){
 
 //The function will print out console the list of books
 void display_list_book(struct books book[],int k){
-
+   clear_screen();
    printf("\n%-8s  %-20s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
   for (int i = 0; i < k; i++) {
     printf("%-8s  %-20s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
@@ -111,6 +133,7 @@ void find_max_price(struct books book[] , int k){
 
 
 void find_book_and_edit(struct books book[],int k){
+  clear_screen();
   char find[10];
   printf("Find what book?(code):");
   scanf("%s",find);
@@ -129,7 +152,7 @@ void find_book_and_edit(struct books book[],int k){
       scanf("%d",&book[i].quantity);
       printf(" Edit price: ");
       scanf("%f",&book[i].price);
-
+      book[i].value = book[i].quantity*book[i].price;
     } 
     else{
       printf("No book found!");
@@ -150,9 +173,17 @@ void find_book_and_delete(struct books book[], int k){
       printf("---------------------------------------------------------------------------------------------");
       printf("Do you want to delete this book(y/n)");
       scanf("%s",&check);
+      if(check == 'y' || check == 'Y'){
+        for(int h=i;h<k;h++){
+          strcpy(book[h+1].code,book[h].code);
+          strcpy(book[h+1].title,book[h].title);
+          book[h+1].quantity=book[h].quantity;
+          book[h+1].price = book[h].price;
+          book[h+1].value = book[h].value;
+        }
       }
+    }
   }
-  
 }
 
 int main()
@@ -160,7 +191,6 @@ int main()
   int choice;
   int k=0,n;
   struct books* book;
-  
   do{
   displaymenu();
   printf("Your selection <0 -> 7>: ");
@@ -169,6 +199,9 @@ int main()
       case 1:
         printf("\nEnter the number of book: ");
         scanf("%d",&n);
+        if(n > MAX){
+          edit_max();
+        }
         book = (struct books*)malloc(n* sizeof(struct books));
         addbook(book,&k,n);
         break;
@@ -183,9 +216,13 @@ int main()
         
       case 5:
       case 6:
-         find_book_and_edit(book,k);
+        find_book_and_edit(book,k);
+        break;
       case 7:
+        find_book_and_delete(book,k);
+        break;
       case 0:
+        exit(0);
       default:
         displaymenu();
         break;
