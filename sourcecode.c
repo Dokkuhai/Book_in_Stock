@@ -11,6 +11,7 @@ struct books{
   float price;
   float value;
 };
+ 
 
 //-------------------------------------------------------------------------------------------------------
 void clear_screen() {                                                                                   
@@ -22,15 +23,16 @@ void clear_screen() {
 }
 
 // Edit the value of MAX if user input more 100 books 
-void edit_max(){
+int edit_max(int n){
   char check;
   printf("You inputing over 100 books! If you want to continue, you need edit it!\n");
-  printf("Are you want to continue(y/n): ");
+  printf("Do you want to continue(y/n): ");
   scanf("%s",&check);
   if(check == 'Y' || check == 'y'){
     printf("Max = ");
     scanf("%d",&MAX);
   }
+  return MAX;
 }
 
 //Delete \n when using fgets function;
@@ -55,28 +57,47 @@ void displaymenu(){
   printf("0.Exit\n");
 }
 
+
+//the function will check book code in array, return 1 if exist or return 0 if not
+
+int find_code(struct books book[],int k, char code[10]){
+  for(int i=0;i<k;i++){
+    if(strcmp(book[i].code,code) == 0){
+      return 1;
+    } 
+  }
+  return 0;
+}
+
 //---------------------------------------------------------------------------------------------------------
 
 
 void addbook(struct books book[],int *k,int n){
-  
-  for(int i=0;i<n;i++){
-    printf(" Book %d:\n",*k+1);
-    printf(" Enter code: ");
-    scanf("%s",book[i].code);
+  for(int i=1;i<=n;i++){
+    printf(" Book %d:\n",i); 
+    while(1){
+       printf(" Enter code: ");
+       scanf("%s",book[*k].code);
+       if(find_code(book,*k, book[*k].code) == 1){
+        printf("Code is already exist! Please input again!\n");
+       }
+       else 
+        break;
+    }
     printf(" Enter title: ");
     getchar();
     fgets(book[*k].title,sizeof(book[*k].title),stdin);
-    delete_newline(book[i].title);
+    delete_newline(book[*k].title);
     printf(" Enter quantity: ");
     scanf("%d",&book[*k].quantity);
     printf(" Enter price: ");
-    scanf("%f",&book[*k].price);
+    scanf("%f",&book[*k].price);  
     book[*k].value = book[*k].quantity*book[*k].price;
     (*k)++;
     printf("\n");
   }
 }
+
 
 
 
@@ -119,13 +140,25 @@ int indexmin;
   }
 }
 
-void load_data_from_file(){
-  FILE *fp = NULL;
-  fp = fopen("database.dat","r");
-  /*while(fscanf(b "",)){
+//Load data from file
 
-  }*/
+void load_data_from_file(struct books book[], int* k) {
+  clear_screen();
+  FILE* fp = fopen("database.txt", "r");
+  if (fp != NULL) {
+    int i = 0;
+    while (i < MAX && fscanf(fp, "%s %s %d %f", book[i].code, book[i].title, &book[i].quantity, &book[i].price) == 4) {
+      book[i].value = book[i].quantity * book[i].price;
+      (*k)++;
+      i++;
+    }
+    fclose(fp);
+    printf("Data loaded from the file successfully.\n");
+  } else {
+    printf("Failed to open the file.\n");
+  }
 }
+
 
 void find_max_price(struct books book[] , int k){
   clear_screen();
@@ -195,7 +228,7 @@ void find_book_and_delete(struct books book[], int *k){
         if (*k < 0) {
           *k = 0;  // Ensure count doesn't become negative
         }
-        printf("Book deleted.\n");
+        printf("Book deleted!.\n");
       } 
     }
   }
@@ -204,7 +237,6 @@ void find_book_and_delete(struct books book[], int *k){
 //-------------------------------------------------------------------------------------------------------------------
 
 int main(){
-
   int choice;
   int k=0,n;
   struct books* book;
@@ -217,7 +249,7 @@ int main(){
         printf("\nEnter the number of book: ");
         scanf("%d",&n);
         if(n > MAX){
-          edit_max();
+          n = edit_max(n);
         }
         book = (struct books*)malloc(n* sizeof(struct books));
         addbook(book,&k,n);
@@ -230,7 +262,7 @@ int main(){
         display_list_book(book,k);
         break; 
       case 4:
-        load_data_from_file();
+        load_data_from_file(book,&k);
         break;
       case 5:
         find_max_price(book,k);
@@ -245,10 +277,10 @@ int main(){
         exit(0);
       default:
         printf("Syntax error! Please input again! \n");
-        displaymenu();
         break;
     }
   }while(choice != 0);
   free(book);
   return 0;
-}
+  }
+
