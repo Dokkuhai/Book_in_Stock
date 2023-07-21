@@ -11,10 +11,10 @@ struct books{
   float price;
   float value;
 };
- 
+
 
 //-------------------------------------------------------------------------------------------------------
-void clear_screen() {                                                                                   
+void clear_screen() {
     #ifdef _WIN32
         system("cls"); // For Windows
     #else
@@ -22,17 +22,18 @@ void clear_screen() {
     #endif
 }
 
-// Edit the value of MAX if user input more 100 books 
+// Edit the value of MAX if user input more 100 books
 int edit_max(int n){
   char check;
-  printf("You inputing over 100 books! If you want to continue, you need edit it!\n");
+  printf("You are inputting over 100 books! If you want to continue, you need edit it!\n");
   printf("Do you want to continue(y/n): ");
   scanf("%s",&check);
   if(check == 'Y' || check == 'y'){
     printf("Max = ");
     scanf("%d",&MAX);
-  }
-  return MAX;
+    return MAX;
+  }else return MAX;//if user don't want edit max, only 100 books will be inputted!
+
 }
 
 //Delete \n when using fgets function;
@@ -61,10 +62,11 @@ void displaymenu(){
 //the function will check book code in array, return 1 if exist or return 0 if not
 
 int find_code(struct books book[],int k, char code[10]){
-  for(int i=0;i<k;i++){
+	int i;
+  for(i=0;i<k;i++){
     if(strcmp(book[i].code,code) == 0){
       return 1;
-    } 
+    }
   }
   return 0;
 }
@@ -72,16 +74,17 @@ int find_code(struct books book[],int k, char code[10]){
 //---------------------------------------------------------------------------------------------------------
 
 
-void addbook(struct books book[],int *k,int n){
-  for(int i=1;i<=n;i++){
-    printf(" Book %d:\n",i); 
-    while(1){
+void addbook(struct books book[],int *k,int n,float total_value){
+  int i;
+  for(i=1;i<=n;i++){
+    printf(" Book %d:\n",i);
+    while(1){// This loop will run until user input code book appove!
        printf(" Enter code: ");
        scanf("%s",book[*k].code);
        if(find_code(book,*k, book[*k].code) == 1){
         printf("Code is already exist! Please input again!\n");
        }
-       else 
+       else
         break;
     }
     printf(" Enter title: ");
@@ -91,8 +94,9 @@ void addbook(struct books book[],int *k,int n){
     printf(" Enter quantity: ");
     scanf("%d",&book[*k].quantity);
     printf(" Enter price: ");
-    scanf("%f",&book[*k].price);  
+    scanf("%f",&book[*k].price);
     book[*k].value = book[*k].quantity*book[*k].price;
+    total_value += book[*k].value;
     (*k)++;
     printf("\n");
   }
@@ -104,14 +108,21 @@ void addbook(struct books book[],int *k,int n){
 //The function will print out console the list of books
 void display_list_book(struct books book[],int k){
   clear_screen();
-  printf("\n%-8s  %-20s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
-  for (int i = 0; i < k; i++) {
-    printf("%-8s  %-20s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
+  int i=0;
+  printf("\n%-8s  %-30s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
+  while(i<k){
+    printf("%-8s  %-30s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
+    i++;
+     if(i % 5 ==0){
+	 	
+     	printf("----------------------------------------------------------------------\n");
+    	getchar();
+	}
   }
-  printf("--------------------------------------------------------\n");
   getchar();
 }
- 
+
+// This function will sort the k books using Linear sorts
 /*void sortofbook(struct books book[],int k){
   for(int i=0;i<k;i++){
     for(int j=i+1;j<k;j++){
@@ -128,10 +139,10 @@ void display_list_book(struct books book[],int k){
 
 //This function will sort the k books using Selection sorts
 void sortofbook(struct books book[],int k){
-int indexmin;
-  for(int i=0;i<k;i++){
+int indexmin,i,j;
+  for(i=0;i<k;i++){
     indexmin = i;
-    for(int j=i;j<k;j++){
+    for(j=i;j<k;j++){
       if(strcmp(book[j].code,book[indexmin].code) <= 0) indexmin =j;
     }
  struct books temp = book[i];
@@ -144,47 +155,73 @@ int indexmin;
 
 void load_data_from_file(struct books book[], int* k) {
   clear_screen();
-  FILE* fp = fopen("database.txt", "r");
-  if (fp != NULL) {
-    int i = 0;
-    while (i < MAX && fscanf(fp, "%s %s %d %f", book[i].code, book[i].title, &book[i].quantity, &book[i].price) == 4) {
-      book[i].value = book[i].quantity * book[i].price;
-      (*k)++;
-      i++;
+  FILE* fp = fopen("database1.txt", "r");
+  if(fp == NULL) {
+  	printf("Load file failed!");
+  	exit(0);
+  }else printf("Loading files...\n");
+  (*k)++;
+  /*char line[100];
+  int count=0;
+  while (fgets(line, sizeof(line), fp) && !feof(fp)) {
+    if (count >= MAX) {
+      printf("The maximum number of books inputted has been reached!\n");
+      break;
     }
-    fclose(fp);
-    printf("Data loaded from the file successfully.\n");
-  } else {
-    printf("Failed to open the file.\n");
+
+    /*char* token = strtok(line, ",");
+    strcpy(book[*k].code, token);
+    token = strtok(NULL, ",");
+    strcpy(book[*k].title, token);
+    token = strtok(NULL, ",");
+    book[*k].quantity = atoi(token);
+    token = strtok(NULL, ",");
+    book[*k].price = atof(token);
+    book[*k].value = book[*k].quantity * book[*k].price;
+    (*k)++;
+    count++;
+  }*/
+  int count = 0; 
+  while (fscanf(fp, "%s %[^\n] %d %f", book[*k].code, book[*k].title, &book[*k].quantity, &book[*k].price) != '\0') {
+  	if (count >= MAX) {
+      printf("The maximum number of books inputted has been reached!\n");
+      break;
+    }
+    book[*k].value = book[*k].quantity * book[*k].price;
+    (*k)++;
+    count++;
   }
+  fclose(fp);
 }
 
+//Find max price of books
 
 void find_max_price(struct books book[] , int k){
   clear_screen();
   double Max_price=book[0].price;
   int indexmax=0;
-  
-  for(int i = 1;i<k;i++){
+  int i;
+  for(i = 1;i<k;i++){
     if(book[i].price > Max_price) {
       Max_price = book[i].price;
       indexmax=i;
     }
   }
-  printf("\n%-8s  %-20s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
-  printf("%-8s  %-20s  %-8d  %-8.2f  %-8.2f\n", book[indexmax].code, book[indexmax].title, book[indexmax].quantity, book[indexmax].price, book[indexmax].value);
+  printf("\n%-8s  %-30s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
+  printf("%-8s  %-30s  %-8d  %-8.2f  %-8.2f\n", book[indexmax].code, book[indexmax].title, book[indexmax].quantity, book[indexmax].price, book[indexmax].value);
   printf("\n");
 }
 
 
 void find_book_and_edit(struct books book[],int k){
+  int i;
   char find[10];
   printf("\nFind what book?(code):");
   scanf("%s",find);
-  for (int i=0;i<k;i++){
+  for (i=0;i<k;i++){
     if(strcmp(book[i].code,find) == 0){
-      printf("\n%-8s  %-20s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
-      printf("%-8s  %-20s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
+      printf("\n%-8s  %-30s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
+      printf("%-8s  %-30s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
       printf(" Book %d:\n",i);
       printf(" Edit code: ");
       scanf("%s",book[i].code);
@@ -197,31 +234,31 @@ void find_book_and_edit(struct books book[],int k){
       printf(" Edit price: ");
       scanf("%f",&book[i].price);
       book[i].value = book[i].quantity*book[i].price;
-    } 
-  } 
+    }
+  }
 }
 
 
 void find_book_and_delete(struct books book[], int *k){
-  clear_screen();
+  int i,h;
   char find[10];
   char check;
   printf("Find what book?(code):");
   scanf("%s",find);
-  for (int i=0;i<*k;i++){
+  for (i=0;i<*k;i++){
     if(strcmp(book[i].code,find) == 0){
-      printf("\n%-8s  %-20s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
-      printf("%-8s  %-20s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
+      printf("\n%-8s  %-30s  %-8s  %-8s  %-8s\n", "Code", "Title", "Quantity", "Price", "Value");
+      printf("%-8s  %-30s  %-8d  %-8.2f  %-8.2f\n", book[i].code, book[i].title, book[i].quantity, book[i].price, book[i].value);
       printf("Do you want to delete this book(y/n): ");
       scanf(" %c",&check);
       if(check == 'y' || check == 'Y'){
         //Delete book by shifting
-        for(int h=i;h<(*k)-1;h++){
+        for(h=i;h<(*k)-1;h++){
           strcpy(book[h].code,book[h+1].code);
           strcpy(book[h].title,book[h+1].title);
           book[h].quantity=book[h+1].quantity;
           book[h].price = book[h+1].price;
-          book[h].value = book[h+1].value;   
+          book[h].value = book[h+1].value;
         }
         //Update book count
         (*k)--;
@@ -229,7 +266,7 @@ void find_book_and_delete(struct books book[], int *k){
           *k = 0;  // Ensure count doesn't become negative
         }
         printf("Book deleted!.\n");
-      } 
+      }
     }
   }
 }
@@ -237,9 +274,10 @@ void find_book_and_delete(struct books book[], int *k){
 //-------------------------------------------------------------------------------------------------------------------
 
 int main(){
+  float sum_value;
   int choice;
   int k=0,n;
-  struct books* book;
+  struct books* book = malloc(MAX * sizeof(struct books));
   do{
   displaymenu();
   printf("Your selection <0 -> 7>: ");
@@ -252,17 +290,18 @@ int main(){
           n = edit_max(n);
         }
         book = (struct books*)malloc(n* sizeof(struct books));
-        addbook(book,&k,n);
+        addbook(book,&k,n,sum_value);
         break;
       case 2:
         display_list_book(book,k);
+        getchar();
         break;
       case 3:
         sortofbook(book,k);
-        display_list_book(book,k);
-        break; 
+        break;
       case 4:
         load_data_from_file(book,&k);
+        getchar();
         break;
       case 5:
         find_max_price(book,k);
